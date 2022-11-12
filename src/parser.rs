@@ -23,7 +23,11 @@ impl<'a> Parser<'a> {
                 TokenType::Eof => break,
                 TokenType::Word => match t.word {
                     "version" => a.version = self.l.next_tok().word.parse().unwrap(),
-
+                    "i18n_type" => { 
+                        self.l.next_tok();
+                        a.i18n_type = Some(true);
+                        self.l.next_tok();
+                    }
                     "header_name" => {
                         self.l.next_tok();
                         a.header_name = consume_braced_string(&mut self.l);

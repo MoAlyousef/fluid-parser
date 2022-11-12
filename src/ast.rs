@@ -123,6 +123,7 @@ pub struct Comment {
 #[derive(Debug, Default)]
 pub struct Ast {
     pub version: f64,
+    pub i18n_type: Option<bool>,
     pub header_name: String,
     pub code_name: String,
     pub classes: Vec<Class>,
