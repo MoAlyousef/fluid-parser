@@ -191,11 +191,11 @@ impl<'a> Parser<'a> {
                     w.props.textsize = Some(consume_word(&t).parse().unwrap());
                 }
                 "box" => {
-                    self.l.next_tok();
+                    t = self.l.next_tok();
                     w.props.r#box = Some(consume_word(&t));
                 }
                 "down_box" => {
-                    self.l.next_tok();
+                    t = self.l.next_tok();
                     w.props.down_box = Some(consume_word(&t));
                 }
                 "align" => {
