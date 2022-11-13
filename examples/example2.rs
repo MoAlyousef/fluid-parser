@@ -7,5 +7,5 @@ fn main() {
     let l = Lexer::new(&s);
     let mut p = Parser::new(l);
     let a = p.parse();
-    dbg!(a);
+    println!("{:#?}", a);
 }

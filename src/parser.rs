@@ -344,9 +344,9 @@ impl<'a> Parser<'a> {
         t = self.l.next_tok();
         // We have children
         if t.typ == TokenType::OpenBrace {
+            t = self.l.next_tok();
             let mut openbrace = 1;
             while t.typ != TokenType::Eof {
-                t = self.l.next_tok();
                 if t.typ == TokenType::OpenBrace {
                     openbrace += 1;
                 }
@@ -356,14 +356,12 @@ impl<'a> Parser<'a> {
                 if openbrace == 0 {
                     break;
                 }
-                if t.word.starts_with("Fl_") || t.word == "MenuItem" {
+                if t.word.starts_with("Fl_") || t.word == "MenuItem" || t.word == "Submenu" {
                     let mut c = self.consume_widget();
                     c.typ = consume_word(&t);
-                    if w.children.as_ref().is_none() {
-                        w.children = Some(vec![]);
-                    }
-                    w.children.as_mut().unwrap().push(c);
+                    w.children.push(c);
                 }
+                t = self.l.next_tok();
             }
         }
         w

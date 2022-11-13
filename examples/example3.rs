@@ -16,25 +16,6 @@ class UserInterface {open
       Fl_Flex {} {open
         xywh {5 5 390 335} resizable gap 5 set_size_tuples {2  0 30  2 30 }
       } {
-        Fl_Flex {} {open
-          xywh {5 5 390 30} type HORIZONTAL gap 5 set_size_tuples {3  0 80  1 80  3 30 }
-        } {
-          Fl_Menu_Button {} {
-            label menu open
-            xywh {5 5 80 30}
-          } {}
-          Fl_Box {} {
-            label {https://}
-            xywh {90 5 80 30}
-          }
-          Fl_Input {} {
-            xywh {175 5 185 30}
-          }
-          Fl_Button {} {
-            label I
-            xywh {365 5 30 30}
-          }
-        }
         Fl_Flex Nmae {open
           xywh {5 40 390 265} type HORIZONTAL gap 5
         } {
@@ -42,6 +23,9 @@ class UserInterface {open
             xywh {5 40 390 265}
           }
         }
+      }
+      Fl_Box this {
+        xywh {5 40 390 265}
       }
     }
   }

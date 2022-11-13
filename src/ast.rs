@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct WidgetProps {
     pub open: Option<bool>,
     pub xywh: String,
@@ -48,12 +48,19 @@ pub struct WidgetProps {
     pub comment: Option<String>,
 }
 
+use std::fmt;
+impl fmt::Debug for WidgetProps {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "")
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Widget {
     pub typ: String,
     pub name: String,
     pub props: WidgetProps,
-    pub children: Option<Vec<Widget>>,
+    pub children: Vec<Widget>,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
