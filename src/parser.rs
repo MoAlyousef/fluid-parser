@@ -112,7 +112,8 @@ impl<'a> Parser<'a> {
         }
         self.next(); // close props parens
         if self.t.typ == TokenType::OpenBrace {
-            while self.t.typ != TokenType::Eof {
+            while self.t.typ != TokenType::CloseBrace {
+                self.next();
                 if self.t.word.starts_with("Fl_")
                     || self.t.word == "MenuItem"
                     || self.t.word == "Submenu"
@@ -124,10 +125,7 @@ impl<'a> Parser<'a> {
                     self.next();
                     f.code = Some(self.consume_code());
                 }
-                self.next();
-                if self.t.typ == TokenType::CloseBrace {
-                    break;
-                }
+
             }
         }
         f
@@ -356,7 +354,8 @@ impl<'a> Parser<'a> {
         // self.debug();
         // We have children
         if self.t.typ == TokenType::OpenBrace {
-            while self.t.typ != TokenType::Eof {
+            while self.t.typ != TokenType::CloseBrace {
+                
                 if self.t.word.starts_with("Fl_")
                     || self.t.word == "MenuItem"
                     || self.t.word == "Submenu"
@@ -365,9 +364,6 @@ impl<'a> Parser<'a> {
                     w.children.push(c);
                 }
                 self.next();
-                if self.t.typ == TokenType::CloseBrace {
-                    break;
-                }
             }
         }
         w
