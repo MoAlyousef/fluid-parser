@@ -5,7 +5,7 @@ use crate::token::{Token, TokenType};
 pub struct Parser<'a> {
     l: Lexer<'a>,
     t: Token<'a>,
-    tokens: Vec<Token<'a>>,
+    pub tokens: Vec<Token<'a>>,
 }
 
 impl<'a> Parser<'a> {
@@ -18,6 +18,7 @@ impl<'a> Parser<'a> {
     }
     pub fn next(&mut self) {
         self.t = self.l.next();
+        dbg!(&self.t);
         self.tokens.push(self.t);
     }
     pub fn debug(&self) {
@@ -75,6 +76,7 @@ impl<'a> Parser<'a> {
         a
     }
     fn consume_func(&mut self) -> Function {
+        dbg!("func");
         let mut f = Function::default();
         self.next();
         self.next();
@@ -125,12 +127,12 @@ impl<'a> Parser<'a> {
                     self.next();
                     f.code = Some(self.consume_code());
                 }
-
             }
         }
         f
     }
     fn consume_widget(&mut self) -> Widget {
+        dbg!("wid");
         let mut w = Widget::default();
         w.typ = consume_word(&self.t);
         self.next();
@@ -355,7 +357,7 @@ impl<'a> Parser<'a> {
         // We have children
         if self.t.typ == TokenType::OpenBrace {
             while self.t.typ != TokenType::CloseBrace {
-                
+                self.next();
                 if self.t.word.starts_with("Fl_")
                     || self.t.word == "MenuItem"
                     || self.t.word == "Submenu"
@@ -363,12 +365,12 @@ impl<'a> Parser<'a> {
                     let c = self.consume_widget();
                     w.children.push(c);
                 }
-                self.next();
             }
         }
         w
     }
     fn consume_class(&mut self) -> Class {
+        dbg!("class");
         let mut c = Class::default();
         self.next();
         if self.t.typ == TokenType::OpenBrace {
@@ -378,11 +380,8 @@ impl<'a> Parser<'a> {
         c.name = consume_word(&self.t);
         self.next();
         // handle props
-        while self.t.typ != TokenType::Eof {
+        while self.t.typ != TokenType::CloseBrace {
             self.next();
-            if self.t.typ == TokenType::CloseBrace {
-                break;
-            }
             match self.t.word {
                 "open" => c.props.open = Some(true),
                 "protected" => c.props.visibility = Some(Visibility::PROTECTED),
@@ -400,18 +399,8 @@ impl<'a> Parser<'a> {
         }
         self.next();
         if self.t.typ == TokenType::OpenBrace {
-            let mut openbrace = 1;
-            while self.t.typ != TokenType::Eof {
+            while self.t.typ != TokenType::CloseBrace {
                 self.next();
-                if self.t.typ == TokenType::OpenBrace {
-                    openbrace += 1;
-                }
-                if self.t.typ == TokenType::CloseBrace {
-                    openbrace -= 1;
-                }
-                if openbrace == 0 {
-                    break;
-                }
                 match self.t.word {
                     "Function" => {
                         let f = self.consume_func();
