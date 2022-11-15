@@ -4,36 +4,51 @@ use crate::token::{Token, TokenType};
 
 pub struct Parser<'a> {
     l: Lexer<'a>,
+    t: Token<'a>,
+    tokens: Vec<Token<'a>>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(lexer: Lexer<'a>) -> Self {
-        Self { l: lexer }
+        Self {
+            l: lexer,
+            t: Token::default(),
+            tokens: vec![],
+        }
+    }
+    pub fn next(&mut self) {
+        self.t = self.l.next();
+        self.tokens.push(self.t);
+    }
+    pub fn debug(&self) {
+        dbg!(&self.t);
     }
     pub fn parse(&mut self) -> Ast {
         let mut a = Ast::default();
-        let mut t = Token::default();
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::Eof {
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::Eof {
                 break;
             }
 
-            match t.typ {
+            match self.t.typ {
                 TokenType::Eof => break,
-                TokenType::Word => match t.word {
-                    "version" => a.version = self.l.next_tok().word.parse().unwrap(),
-                    "i18n_type" => { 
-                        self.l.next_tok();
+                TokenType::Word => match self.t.word {
+                    "version" => a.version = {
+                        self.next();
+                        self.t.word.parse().unwrap()
+                    },
+                    "i18n_type" => {
+                        self.next();
                         a.i18n_type = Some(true);
-                        self.l.next_tok();
+                        self.next();
                     }
                     "header_name" => {
-                        self.l.next_tok();
+                        self.next();
                         a.header_name = consume_braced_string(&mut self.l);
                     }
                     "code_name" => {
-                        self.l.next_tok();
+                        self.next();
                         a.code_name = consume_braced_string(&mut self.l);
                     }
                     "class" => {
@@ -61,62 +76,57 @@ impl<'a> Parser<'a> {
     }
     fn consume_func(&mut self) -> Function {
         let mut f = Function::default();
-        self.l.next_tok();
-        let mut t = self.l.next_tok();
-        f.name = consume_word(&t);
-        self.l.next_tok(); // closing parens of function name
-        self.l.next_tok(); // opening parens of props
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::CloseBrace {
+        self.next();
+        self.next();
+        f.name = consume_word(&self.t);
+        self.next(); // closing parens of function name
+        self.next(); // opening parens of props
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::CloseBrace {
                 break;
             }
-            match t.word {
+            match self.t.word {
                 "open" => f.props.open = Some(true),
                 "C" => f.props.c = Some(true),
                 "protected" => f.props.visibility = Some(Visibility::PROTECTED),
                 "private" => f.props.visibility = Some(Visibility::PRIVATE),
                 "comment" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         f.props.comment = Some(consume_braced_string(&mut self.l));
                     } else {
-                        f.props.comment = Some(consume_word(&t));
+                        f.props.comment = Some(consume_word(&self.t));
                     }
                 }
                 "return_type" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         f.props.return_type = Some(consume_braced_string(&mut self.l));
                     } else {
-                        f.props.return_type = Some(consume_word(&t));
+                        f.props.return_type = Some(consume_word(&self.t));
                     }
                 }
                 _ => (),
             }
         }
-        t = self.l.next_tok(); // close props parens
-        if t.typ == TokenType::OpenBrace {
-            let mut openbrace = 1;
-            while t.typ != TokenType::Eof {
-                t = self.l.next_tok();
-                if t.typ == TokenType::OpenBrace {
-                    openbrace += 1;
-                }
-                if t.typ == TokenType::CloseBrace {
-                    openbrace -= 1;
-                }
-                if openbrace == 0 {
-                    break;
-                }
-                if t.word.starts_with("Fl_") || t.word == "MenuItem" || t.word == "Submenu" {
-                    let mut w = self.consume_widget();
-                    w.typ = consume_word(&t);
+        self.next(); // close props parens
+        if self.t.typ == TokenType::OpenBrace {
+            while self.t.typ != TokenType::Eof {
+                if self.t.word.starts_with("Fl_")
+                    || self.t.word == "MenuItem"
+                    || self.t.word == "Submenu"
+                {
+                    let w = self.consume_widget();
                     f.widgets.push(w);
                 }
-                if t.word == "code" {
-                    self.l.next_tok();
+                if self.t.word == "code" {
+                    self.next();
                     f.code = Some(self.consume_code());
+                }
+                self.next();
+                if self.t.typ == TokenType::CloseBrace {
+                    break;
                 }
             }
         }
@@ -124,21 +134,22 @@ impl<'a> Parser<'a> {
     }
     fn consume_widget(&mut self) -> Widget {
         let mut w = Widget::default();
-        let mut t = self.l.next_tok();
-        if t.typ == TokenType::OpenBrace {
-            t = self.l.next_tok();
+        w.typ = consume_word(&self.t);
+        self.next();
+        if self.t.typ == TokenType::OpenBrace {
+            self.next();
         }
-        if !t.word.is_empty() {
-            w.name = consume_word(&t);
+        if !self.t.word.is_empty() {
+            w.name = consume_word(&self.t);
         } else {
             w.name = String::new();
         }
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::CloseBrace {
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::CloseBrace {
                 break;
             }
-            match t.word {
+            match self.t.word {
                 "open" => w.props.open = Some(true),
                 "hide" => w.props.hide = Some(true),
                 "deactivate" => w.props.deactivate = Some(true),
@@ -147,280 +158,275 @@ impl<'a> Parser<'a> {
                 "visible" => w.props.visible = Some(true),
                 "hotspot" => w.props.hotspot = Some(true),
                 "xywh" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.xywh = consume_braced_string(&mut self.l);
                 }
                 "color" => {
-                    t = self.l.next_tok();
-                    w.props.color = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.color = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "selection_color" => {
-                    t = self.l.next_tok();
-                    w.props.selection_color = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.selection_color = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "labelcolor" => {
-                    t = self.l.next_tok();
-                    w.props.labelcolor = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.labelcolor = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "textcolor" => {
-                    t = self.l.next_tok();
-                    w.props.textcolor = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.textcolor = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "type" => {
-                    t = self.l.next_tok();
-                    w.props.typ = Some(consume_word(&t));
+                    self.next();
+                    w.props.typ = Some(consume_word(&self.t));
                 }
                 "labeltype" => {
-                    t = self.l.next_tok();
-                    w.props.labeltype = Some(consume_word(&t));
+                    self.next();
+                    w.props.labeltype = Some(consume_word(&self.t));
                 }
                 "labelfont" => {
-                    t = self.l.next_tok();
-                    w.props.labelfont = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.labelfont = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "textfont" => {
-                    t = self.l.next_tok();
-                    w.props.textfont = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.textfont = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "labelsize" => {
-                    t = self.l.next_tok();
-                    w.props.labelsize = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.labelsize = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "textsize" => {
-                    t = self.l.next_tok();
-                    w.props.textsize = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.textsize = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "box" => {
-                    t = self.l.next_tok();
-                    w.props.r#box = Some(consume_word(&t));
+                    self.next();
+                    w.props.r#box = Some(consume_word(&self.t));
                 }
                 "down_box" => {
-                    t = self.l.next_tok();
-                    w.props.down_box = Some(consume_word(&t));
+                    self.next();
+                    w.props.down_box = Some(consume_word(&self.t));
                 }
                 "align" => {
-                    t = self.l.next_tok();
-                    w.props.align = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.align = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "when" => {
-                    t = self.l.next_tok();
-                    w.props.when = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.when = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "shortcut" => {
-                    t = self.l.next_tok();
-                    w.props.shortcut = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.shortcut = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "gap" => {
-                    t = self.l.next_tok();
-                    w.props.gap = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.gap = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "minimum" => {
-                    t = self.l.next_tok();
-                    w.props.minimum = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.minimum = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "maximum" => {
-                    t = self.l.next_tok();
-                    w.props.maximum = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.maximum = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "step" => {
-                    t = self.l.next_tok();
-                    w.props.step = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.step = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "slider_size" => {
-                    t = self.l.next_tok();
-                    w.props.slider_size = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.slider_size = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "size" => {
-                    t = self.l.next_tok();
-                    w.props.size = Some(consume_word(&t).parse().unwrap());
+                    self.next();
+                    w.props.size = Some(consume_word(&self.t).parse().unwrap());
                 }
                 "label" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.label = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.label = Some(consume_word(&t));
+                        w.props.label = Some(consume_word(&self.t));
                     }
                 }
                 "class" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.class = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.class = Some(consume_word(&t));
+                        w.props.class = Some(consume_word(&self.t));
                     }
                 }
                 "tooltip" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.tooltip = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.tooltip = Some(consume_word(&t));
+                        w.props.tooltip = Some(consume_word(&self.t));
                     }
                 }
                 "image" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.image = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.image = Some(consume_word(&t));
+                        w.props.image = Some(consume_word(&self.t));
                     }
                 }
                 "deimage" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.deimage = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.deimage = Some(consume_word(&t));
+                        w.props.deimage = Some(consume_word(&self.t));
                     }
                 }
                 "value" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.value = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.value = Some(consume_word(&t));
+                        w.props.value = Some(consume_word(&self.t));
                     }
                 }
                 "set_size_tuples" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.size_tuple = Some(consume_braced_string(&mut self.l));
                 }
                 "code0" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.code0 = Some(consume_braced_string(&mut self.l));
                 }
                 "code1" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.code1 = Some(consume_braced_string(&mut self.l));
                 }
                 "code2" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.code2 = Some(consume_braced_string(&mut self.l));
                 }
                 "code3" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.code3 = Some(consume_braced_string(&mut self.l));
                 }
                 "extra_code" => {
-                    self.l.next_tok();
+                    self.next();
                     w.props.extra_code = Some(consume_braced_string(&mut self.l));
                 }
                 "callback" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.callback = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.callback = Some(consume_word(&t));
+                        w.props.callback = Some(consume_word(&self.t));
                     }
                 }
                 "user_data" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.user_data = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.user_data = Some(consume_word(&t));
+                        w.props.user_data = Some(consume_word(&self.t));
                     }
                 }
                 "user_data_type" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.user_data_type = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.user_data_type = Some(consume_word(&t));
+                        w.props.user_data_type = Some(consume_word(&self.t));
                     }
                 }
                 "comment" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         w.props.comment = Some(consume_braced_string(&mut self.l));
                     } else {
-                        w.props.comment = Some(consume_word(&t));
+                        w.props.comment = Some(consume_word(&self.t));
                     }
                 }
                 _ => (),
             }
         }
-        t = self.l.next_tok();
+        self.next();
+        // self.debug();
         // We have children
-        if t.typ == TokenType::OpenBrace {
-            t = self.l.next_tok();
-            let mut openbrace = 1;
-            while t.typ != TokenType::Eof {
-                if t.typ == TokenType::OpenBrace {
-                    openbrace += 1;
-                }
-                if t.typ == TokenType::CloseBrace {
-                    openbrace -= 1;
-                }
-                if openbrace == 0 {
-                    break;
-                }
-                if t.word.starts_with("Fl_") || t.word == "MenuItem" || t.word == "Submenu" {
-                    let mut c = self.consume_widget();
-                    c.typ = consume_word(&t);
+        if self.t.typ == TokenType::OpenBrace {
+            while self.t.typ != TokenType::Eof {
+                if self.t.word.starts_with("Fl_")
+                    || self.t.word == "MenuItem"
+                    || self.t.word == "Submenu"
+                {
+                    let c = self.consume_widget();
                     w.children.push(c);
                 }
-                t = self.l.next_tok();
+                self.next();
+                if self.t.typ == TokenType::CloseBrace {
+                    break;
+                }
             }
         }
         w
     }
     fn consume_class(&mut self) -> Class {
         let mut c = Class::default();
-        let mut t = self.l.next_tok();
-        if t.typ == TokenType::OpenBrace {
-            t = self.l.next_tok();
-            self.l.next_tok();
+        self.next();
+        if self.t.typ == TokenType::OpenBrace {
+            self.next();
+            self.next();
         }
-        c.name = consume_word(&t);
-        self.l.next_tok();
+        c.name = consume_word(&self.t);
+        self.next();
         // handle props
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::CloseBrace {
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::CloseBrace {
                 break;
             }
-            match t.word {
+            match self.t.word {
                 "open" => c.props.open = Some(true),
                 "protected" => c.props.visibility = Some(Visibility::PROTECTED),
                 "private" => c.props.visibility = Some(Visibility::PRIVATE),
                 "comment" => {
-                    t = self.l.next_tok();
-                    if t.typ == TokenType::OpenBrace {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
                         c.props.comment = Some(consume_braced_string(&mut self.l));
                     } else {
-                        c.props.comment = Some(consume_word(&t));
+                        c.props.comment = Some(consume_word(&self.t));
                     }
                 }
                 _ => (),
             }
         }
-        t = self.l.next_tok();
-        if t.typ == TokenType::OpenBrace {
+        self.next();
+        if self.t.typ == TokenType::OpenBrace {
             let mut openbrace = 1;
-            while t.typ != TokenType::Eof {
-                t = self.l.next_tok();
-                if t.typ == TokenType::OpenBrace {
+            while self.t.typ != TokenType::Eof {
+                self.next();
+                if self.t.typ == TokenType::OpenBrace {
                     openbrace += 1;
                 }
-                if t.typ == TokenType::CloseBrace {
+                if self.t.typ == TokenType::CloseBrace {
                     openbrace -= 1;
                 }
                 if openbrace == 0 {
                     break;
                 }
-                match t.word {
+                match self.t.word {
                     "Function" => {
                         let f = self.consume_func();
                         c.functions.push(f);
                     }
                     "comment" => {
-                        t = self.l.next_tok();
-                        if t.typ == TokenType::OpenBrace {
+                        self.next();
+                        if self.t.typ == TokenType::OpenBrace {
                             c.props.comment = Some(consume_braced_string(&mut self.l));
                         } else {
-                            c.props.comment = Some(consume_word(&t));
+                            c.props.comment = Some(consume_word(&self.t));
                         }
                     }
                     _ => (),
@@ -431,14 +437,14 @@ impl<'a> Parser<'a> {
     }
     fn consume_comment(&mut self) -> Comment {
         let mut c = Comment::default();
-        let mut t = self.l.next_tok();
+        self.next();
         c.comment = consume_braced_string(&mut self.l);
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::CloseBrace {
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::CloseBrace {
                 break;
             }
-            match t.word {
+            match self.t.word {
                 "in_source" => c.props.in_source = Some(true),
                 "in_header" => c.props.in_header = Some(true),
                 _ => (),
@@ -448,14 +454,14 @@ impl<'a> Parser<'a> {
     }
     fn consume_decl(&mut self) -> Decl {
         let mut d = Decl::default();
-        let mut t = self.l.next_tok();
+        self.next();
         d.decl = consume_braced_string(&mut self.l);
-        while t.typ != TokenType::Eof {
-            t = self.l.next_tok();
-            if t.typ == TokenType::CloseBrace {
+        while self.t.typ != TokenType::Eof {
+            self.next();
+            if self.t.typ == TokenType::CloseBrace {
                 break;
             }
-            match t.word {
+            match self.t.word {
                 "private" => d.props.visibility = Visibility::PRIVATE,
                 "public" => d.props.visibility = Visibility::PUBLIC,
                 "global" => d.props.global = Some(true),
@@ -468,8 +474,8 @@ impl<'a> Parser<'a> {
     fn consume_code(&mut self) -> String {
         let s = consume_braced_string(&mut self.l);
         // skip last 2 braces
-        self.l.next_tok();
-        self.l.next_tok();
+        self.next();
+        self.next();
         s
     }
 }
@@ -479,11 +485,11 @@ fn consume_word(t: &Token) -> String {
 }
 
 fn consume_braced_string(l: &mut Lexer) -> String {
-    let mut t = l.next_tok();
+    let mut t = l.next();
     let start = t.start;
     let mut openbrace = 1;
     while t.typ != TokenType::Eof {
-        t = l.next_tok();
+        t = l.next();
         if t.typ == TokenType::OpenBrace {
             openbrace += 1;
         }

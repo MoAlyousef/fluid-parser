@@ -20,7 +20,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn next_tok(&mut self) -> Token<'a> {
+    pub fn next(&mut self) -> Token<'a> {
         let mut t = Token::default();
         if self.cursor == self.size {
             t.typ = TokenType::Eof;
