@@ -29,7 +29,10 @@ class UserInterface {open
       }
     }
   }
-}"#;
+  Function {mak()} { } { }
+}
+class UserInterface2 {open
+} { }"#;
 
 fn main() {
     let l = Lexer::new(TEST);
