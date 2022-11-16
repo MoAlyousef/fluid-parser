@@ -18,7 +18,6 @@ impl<'a> Parser<'a> {
     }
     pub fn next(&mut self) {
         self.t = self.l.next();
-        dbg!(&self.t);
         self.tokens.push(self.t);
     }
     pub fn debug(&self) {
@@ -76,7 +75,6 @@ impl<'a> Parser<'a> {
         a
     }
     fn consume_func(&mut self) -> Function {
-        dbg!("func");
         let mut f = Function::default();
         self.next();
         self.next();
@@ -116,7 +114,7 @@ impl<'a> Parser<'a> {
         if self.t.typ == TokenType::OpenBrace {
             while self.t.typ != TokenType::CloseBrace {
                 self.next();
-                if self.t.word.starts_with("Fl_")
+                while self.t.word.starts_with("Fl_")
                     || self.t.word == "MenuItem"
                     || self.t.word == "Submenu"
                 {
@@ -132,7 +130,6 @@ impl<'a> Parser<'a> {
         f
     }
     fn consume_widget(&mut self) -> Widget {
-        dbg!("wid");
         let mut w = Widget::default();
         w.typ = consume_word(&self.t);
         self.next();
@@ -358,7 +355,7 @@ impl<'a> Parser<'a> {
         if self.t.typ == TokenType::OpenBrace {
             while self.t.typ != TokenType::CloseBrace {
                 self.next();
-                if self.t.word.starts_with("Fl_")
+                while self.t.word.starts_with("Fl_")
                     || self.t.word == "MenuItem"
                     || self.t.word == "Submenu"
                 {
@@ -370,7 +367,6 @@ impl<'a> Parser<'a> {
         w
     }
     fn consume_class(&mut self) -> Class {
-        dbg!("class");
         let mut c = Class::default();
         self.next();
         if self.t.typ == TokenType::OpenBrace {
@@ -399,22 +395,19 @@ impl<'a> Parser<'a> {
         }
         self.next();
         if self.t.typ == TokenType::OpenBrace {
-            while self.t.typ != TokenType::CloseBrace {
+            while self.t.typ != TokenType::Eof {
                 self.next();
-                match self.t.word {
-                    "Function" => {
-                        let f = self.consume_func();
-                        c.functions.push(f);
+                while self.t.word == "Function" {
+                    let f = self.consume_func();
+                    c.functions.push(f);
+                }
+                if self.t.word == "comment" {
+                    self.next();
+                    if self.t.typ == TokenType::OpenBrace {
+                        c.props.comment = Some(consume_braced_string(&mut self.l));
+                    } else {
+                        c.props.comment = Some(consume_word(&self.t));
                     }
-                    "comment" => {
-                        self.next();
-                        if self.t.typ == TokenType::OpenBrace {
-                            c.props.comment = Some(consume_braced_string(&mut self.l));
-                        } else {
-                            c.props.comment = Some(consume_word(&self.t));
-                        }
-                    }
-                    _ => (),
                 }
             }
         }

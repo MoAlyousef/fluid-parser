@@ -35,5 +35,5 @@ fn main() {
     let l = Lexer::new(TEST);
     let mut p = Parser::new(l);
     let a = p.parse();
-    // println!("{:#?}", p.tokens);
+    println!("{:#?}", a);
 }
