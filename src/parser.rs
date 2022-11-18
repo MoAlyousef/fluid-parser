@@ -404,7 +404,6 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        self.i += 1;
         c
     }
     fn consume_comment(&mut self) -> Comment {
