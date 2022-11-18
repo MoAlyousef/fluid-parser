@@ -1,4 +1,4 @@
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct WidgetProps {
     pub open: Option<bool>,
     pub xywh: String,
@@ -48,13 +48,6 @@ pub struct WidgetProps {
     pub comment: Option<String>,
 }
 
-use std::fmt;
-impl fmt::Debug for WidgetProps {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "")
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct Widget {
     pub typ: String,
@@ -63,12 +56,17 @@ pub struct Widget {
     pub children: Vec<Widget>,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Visibility {
-    #[default]
     PUBLIC,
     PRIVATE,
     PROTECTED,
+}
+
+impl Default for Visibility {
+    fn default() -> Self {
+        Visibility::PUBLIC
+    }
 }
 
 #[derive(Debug, Default)]

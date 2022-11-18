@@ -29,11 +29,6 @@ class UserInterface {open
       }
     }
   }
-  Function {mak()} { } { }
-}
-class UserInterface2 {
-} { 
-  Function {mak2()} { } { }
 }"#;
 
 fn main() {

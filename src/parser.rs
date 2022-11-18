@@ -112,6 +112,7 @@ impl<'a> Parser<'a> {
                 {
                     let w = self.consume_widget();
                     f.widgets.push(w);
+                    self.i += 1;
                 }
                 if self.tokens[self.i].word == "code" {
                     self.i += 1;
@@ -389,9 +390,9 @@ impl<'a> Parser<'a> {
         }
         self.i += 1;
         if self.tokens[self.i].typ == TokenType::OpenBrace {
-            while self.tokens[self.i].typ != TokenType::Eof {
+            while self.tokens[self.i].typ != TokenType::CloseBrace {
                 self.i += 1;
-                if self.tokens[self.i].word == "Function" {
+                while self.tokens[self.i].word == "Function" {
                     let f = self.consume_func();
                     c.functions.push(f);
                 }
@@ -405,7 +406,6 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        self.i += 1;
         c
     }
     fn consume_comment(&mut self) -> Comment {

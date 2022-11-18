@@ -1,11 +1,16 @@
-#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TokenType {
-    #[default]
     Unknown,
     Word,
     OpenBrace,
     CloseBrace,
     Eof,
+}
+
+impl Default for TokenType {
+    fn default() -> Self {
+        TokenType::Unknown
+    }
 }
 
 #[derive(Default, Debug, Copy, Clone)]
