@@ -11,7 +11,7 @@ class UserInterface {open
   Function {make_window()} {open
   } {
     Fl_Window Hello {open
-      xywh {821 256 400 344} type Double align 80 resizable visible
+      xywh {821 256 400 344} type Double align 80 resizable visible callback { println!(""); show_window(); }
     } {
       Fl_Flex {} {open
         xywh {5 5 390 335} resizable gap 5 set_size_tuples {2  0 30  2 30 } visible
@@ -31,8 +31,10 @@ class UserInterface {open
   }
   Function {mak()} { } { }
 }
-class UserInterface2 {open
-} { }"#;
+class UserInterface2 {
+} { 
+  Function {mak2()} { } { }
+}"#;
 
 fn main() {
     let l = Lexer::new(TEST);
