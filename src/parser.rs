@@ -471,7 +471,7 @@ impl<'a> Parser<'a> {
         }
         let end = self.i;
         let range = &self.tokens[start..end];
-        let mut s: String = range.iter().map(|s| s.word.to_string() + " ").collect();
+        let s: String = range.iter().map(|s| s.word.to_string() + " ").collect();
         s.trim().to_string()
     }
 }
