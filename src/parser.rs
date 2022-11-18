@@ -358,6 +358,8 @@ impl<'a> Parser<'a> {
                 }
             }
         }
+        self.i += 1;
+        // dbg!(self.tokens[self.i]);
         w
     }
     fn consume_class(&mut self) -> Class {
