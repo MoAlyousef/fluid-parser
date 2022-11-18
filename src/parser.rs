@@ -15,10 +15,7 @@ impl<'a> Parser<'a> {
             t = lexer.next();
             tokens.push(t);
         }
-        Self {
-            i: 0,
-            tokens,
-        }
+        Self { i: 0, tokens }
     }
     pub fn parse(&mut self) -> Ast {
         let mut a = Ast::default();
@@ -27,11 +24,12 @@ impl<'a> Parser<'a> {
             match curr.typ {
                 TokenType::Eof => break,
                 TokenType::Word => match curr.word {
-                    "version" => a.version = {
-                        self.i += 1;
-                        self.tokens[self.i].word.parse().unwrap()
-
-                    },
+                    "version" => {
+                        a.version = {
+                            self.i += 1;
+                            self.tokens[self.i].word.parse().unwrap()
+                        }
+                    }
                     "i18n_type" => {
                         a.i18n_type = Some(true);
                         self.i += 2;
@@ -121,6 +119,7 @@ impl<'a> Parser<'a> {
                 }
             }
         }
+        self.i += 1;
         f
     }
     fn consume_widget(&mut self) -> Widget {
@@ -158,11 +157,13 @@ impl<'a> Parser<'a> {
                 }
                 "selection_color" => {
                     self.i += 1;
-                    w.props.selection_color = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.selection_color =
+                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
                 }
                 "labelcolor" => {
                     self.i += 1;
-                    w.props.labelcolor = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.labelcolor =
+                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
                 }
                 "textcolor" => {
                     self.i += 1;
@@ -230,7 +231,8 @@ impl<'a> Parser<'a> {
                 }
                 "slider_size" => {
                     self.i += 1;
-                    w.props.slider_size = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.slider_size =
+                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
                 }
                 "size" => {
                     self.i += 1;
@@ -343,10 +345,8 @@ impl<'a> Parser<'a> {
                 _ => (),
             }
         }
-        self.i += 1;
-        // self.debug();
-        // We have children
-        if self.tokens[self.i].typ == TokenType::OpenBrace {
+        if self.tokens[self.i + 1].typ == TokenType::OpenBrace {
+            self.i += 1;
             while self.tokens[self.i].typ != TokenType::CloseBrace {
                 self.i += 1;
                 while self.tokens[self.i].word.starts_with("Fl_")
@@ -355,11 +355,10 @@ impl<'a> Parser<'a> {
                 {
                     let c = self.consume_widget();
                     w.children.push(c);
+                    self.i += 1;
                 }
             }
         }
-        self.i += 1;
-        // dbg!(self.tokens[self.i]);
         w
     }
     fn consume_class(&mut self) -> Class {
@@ -406,6 +405,7 @@ impl<'a> Parser<'a> {
                 }
             }
         }
+        self.i += 1;
         c
     }
     fn consume_comment(&mut self) -> Comment {
@@ -451,7 +451,7 @@ impl<'a> Parser<'a> {
         self.i += 1;
         s
     }
-    
+
     fn consume_braced_string(&mut self) -> String {
         let mut t = self.tokens[self.i];
         self.i += 1;
@@ -476,4 +476,3 @@ impl<'a> Parser<'a> {
         s.trim().to_string()
     }
 }
-
