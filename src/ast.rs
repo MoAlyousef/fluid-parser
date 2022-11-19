@@ -34,7 +34,7 @@ pub struct WidgetProps {
     pub textsize: Option<i32>,
     pub textcolor: Option<u32>,
     pub class: Option<String>,
-    pub shortcut: Option<i32>,
+    pub shortcut: Option<String>,
     pub code0: Option<String>,
     pub code1: Option<String>,
     pub code2: Option<String>,
