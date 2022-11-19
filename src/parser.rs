@@ -172,7 +172,11 @@ impl<'a> Parser<'a> {
                 }
                 "type" => {
                     self.i += 1;
-                    w.props.typ = Some(self.tokens[self.i].word.to_string());
+                    if self.tokens[self.i].typ == TokenType::OpenBrace {
+                        w.props.typ = Some(self.consume_braced_string());
+                    } else {
+                        w.props.typ = Some(self.tokens[self.i].word.to_string());
+                    }
                 }
                 "labeltype" => {
                     self.i += 1;
