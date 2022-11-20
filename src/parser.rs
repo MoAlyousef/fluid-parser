@@ -3,7 +3,7 @@ use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
 pub struct Parser<'a> {
-    lexer : Lexer<'a>,
+    lexer: Lexer<'a>,
     pub i: usize,
     pub tokens: Vec<Token<'a>>,
 }
@@ -16,7 +16,11 @@ impl<'a> Parser<'a> {
             t = lexer.next();
             tokens.push(t);
         }
-        Self { lexer, i: 0, tokens }
+        Self {
+            lexer,
+            i: 0,
+            tokens,
+        }
     }
     pub fn parse(&mut self) -> Ast {
         let mut a = Ast::default();
@@ -109,6 +113,11 @@ impl<'a> Parser<'a> {
         if self.tokens[self.i].typ == TokenType::OpenBrace {
             while self.tokens[self.i].typ != TokenType::CloseBrace {
                 self.i += 1;
+                if self.tokens[self.i].word == "code" {
+                    self.i += 1;
+                    f.code = Some(self.consume_code());
+                    self.i += 1;
+                }
                 if self.tokens[self.i].word.starts_with("Fl_")
                     || self.tokens[self.i].word == "MenuItem"
                     || self.tokens[self.i].word == "Submenu"
@@ -116,10 +125,6 @@ impl<'a> Parser<'a> {
                     let w = self.consume_widget();
                     f.widgets.push(w);
                     self.i += 1;
-                }
-                if self.tokens[self.i].word == "code" {
-                    self.i += 1;
-                    f.code = Some(self.consume_code());
                 }
             }
         }
