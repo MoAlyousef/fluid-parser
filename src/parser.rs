@@ -3,6 +3,7 @@ use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
 pub struct Parser<'a> {
+    lexer : Lexer<'a>,
     pub i: usize,
     pub tokens: Vec<Token<'a>>,
 }
@@ -15,7 +16,7 @@ impl<'a> Parser<'a> {
             t = lexer.next();
             tokens.push(t);
         }
-        Self { i: 0, tokens }
+        Self { lexer, i: 0, tokens }
     }
     pub fn parse(&mut self) -> Ast {
         let mut a = Ast::default();
@@ -35,9 +36,11 @@ impl<'a> Parser<'a> {
                         self.i += 2;
                     }
                     "header_name" => {
+                        self.i += 1;
                         a.header_name = self.consume_braced_string();
                     }
                     "code_name" => {
+                        self.i += 1;
                         a.code_name = self.consume_braced_string();
                     }
                     "class" => {
@@ -457,9 +460,9 @@ impl<'a> Parser<'a> {
     }
 
     fn consume_braced_string(&mut self) -> String {
-        let mut t = self.tokens[self.i];
         self.i += 1;
-        let start = self.i;
+        let mut t = self.tokens[self.i];
+        let start = t.start;
         let mut openbrace = 1;
         while t.typ != TokenType::Eof {
             self.i += 1;
@@ -474,9 +477,7 @@ impl<'a> Parser<'a> {
                 break;
             }
         }
-        let end = self.i;
-        let range = &self.tokens[start..end];
-        let s: String = range.iter().map(|s| s.word.to_string() + " ").collect();
-        s.trim().to_string()
+        let end = self.tokens[self.i].end - 1;
+        self.lexer.s[start..end].to_string()
     }
 }
