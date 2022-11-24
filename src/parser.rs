@@ -29,23 +29,9 @@ impl<'a> Parser<'a> {
             match curr.typ {
                 TokenType::Eof => break,
                 TokenType::Word => match curr.word {
-                    "version" => {
-                        a.version = {
-                            self.i += 1;
-                            self.tokens[self.i].word.parse().unwrap()
-                        }
-                    }
                     "i18n_type" => {
                         a.i18n_type = Some(true);
                         self.i += 2;
-                    }
-                    "header_name" => {
-                        self.i += 1;
-                        a.header_name = self.consume_braced_string();
-                    }
-                    "code_name" => {
-                        self.i += 1;
-                        a.code_name = self.consume_braced_string();
                     }
                     "class" => {
                         if self.tokens[self.i].word == "class" {

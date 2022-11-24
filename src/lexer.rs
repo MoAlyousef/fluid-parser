@@ -10,8 +10,10 @@ impl<'a> Lexer<'a> {
     pub fn new(source: &str) -> Lexer {
         let size = source.len();
         let mut cursor = 0;
-        while cursor < size && source.as_bytes()[cursor] != b'\n' {
-            cursor += 1;
+        if source.starts_with("# ") {
+            while cursor < size && source.as_bytes()[cursor] != b'\n' {
+                cursor += 1;
+            }
         }
         Lexer {
             s: source,
