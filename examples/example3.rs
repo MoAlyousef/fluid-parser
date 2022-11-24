@@ -25,7 +25,7 @@ class UserInterface {open
         }
       }
       Fl_Box this {
-        xywh {5 40 390 265}
+        xywh {5 40 390 265} shortcut 0xff textsize 12
       }
     }
   }

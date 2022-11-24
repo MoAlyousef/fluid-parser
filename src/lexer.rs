@@ -31,7 +31,10 @@ impl<'a> Lexer<'a> {
             return t;
         }
         while self.cursor < self.size
-            && (self.s.as_bytes()[self.cursor] == b' ' || self.s.as_bytes()[self.cursor] == b'\n')
+            && (self.s.as_bytes()[self.cursor] == b' '
+                || self.s.as_bytes()[self.cursor] == b'\n'
+                || self.s.as_bytes()[self.cursor] == b'\r'
+                || self.s.as_bytes()[self.cursor] == b'\t')
         {
             self.cursor += 1;
         }
@@ -63,6 +66,8 @@ impl<'a> Lexer<'a> {
                 while self.cursor < self.size
                     && self.s.as_bytes()[self.cursor] != b' '
                     && self.s.as_bytes()[self.cursor] != b'\n'
+                    && self.s.as_bytes()[self.cursor] != b'\r'
+                    && self.s.as_bytes()[self.cursor] != b'\t'
                     && self.s.as_bytes()[self.cursor] != b'}'
                 {
                     self.cursor += 1;

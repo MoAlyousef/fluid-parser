@@ -148,21 +148,43 @@ impl<'a> Parser<'a> {
                 }
                 "color" => {
                     self.i += 1;
-                    w.props.color = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.color = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `align` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "selection_color" => {
                     self.i += 1;
-                    w.props.selection_color =
-                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.selection_color = Some(
+                        self.tokens[self.i]
+                            .word
+                            .to_string()
+                            .parse()
+                            .expect(&format!(
+                            "Failed to parse numeric value for `selection_color` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        )),
+                    );
                 }
                 "labelcolor" => {
                     self.i += 1;
-                    w.props.labelcolor =
-                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.labelcolor = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `labelcolor` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "textcolor" => {
                     self.i += 1;
-                    w.props.textcolor = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.textcolor = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `textcolor` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "type" => {
                     self.i += 1;
@@ -178,19 +200,39 @@ impl<'a> Parser<'a> {
                 }
                 "labelfont" => {
                     self.i += 1;
-                    w.props.labelfont = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.labelfont = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `labeltype` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "textfont" => {
                     self.i += 1;
-                    w.props.textfont = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.textfont = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `textfont` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "labelsize" => {
                     self.i += 1;
-                    w.props.labelsize = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.labelsize = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `labelsize` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "textsize" => {
                     self.i += 1;
-                    w.props.textsize = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.textsize = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `textsize` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "box" => {
                     self.i += 1;
@@ -202,40 +244,83 @@ impl<'a> Parser<'a> {
                 }
                 "align" => {
                     self.i += 1;
-                    w.props.align = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.align = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `align` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "when" => {
                     self.i += 1;
-                    w.props.when = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.when = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `when` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "shortcut" => {
                     self.i += 1;
-                    w.props.shortcut = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.shortcut = Some(self.tokens[self.i].word.to_string());
                 }
                 "gap" => {
                     self.i += 1;
-                    w.props.gap = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.gap = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `gap` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "minimum" => {
                     self.i += 1;
-                    w.props.minimum = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.minimum = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `minimum` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "maximum" => {
                     self.i += 1;
-                    w.props.maximum = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.maximum = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `maximum` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "step" => {
                     self.i += 1;
-                    w.props.step = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.step = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `step` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "slider_size" => {
                     self.i += 1;
-                    w.props.slider_size =
-                        Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.slider_size = Some(
+                        self.tokens[self.i]
+                            .word
+                            .to_string()
+                            .parse()
+                            .expect(&format!(
+                            "Failed to parse numeric value for `slider_size` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        )),
+                    );
                 }
                 "size" => {
                     self.i += 1;
-                    w.props.size = Some(self.tokens[self.i].word.to_string().parse().unwrap());
+                    w.props.size = Some(self.tokens[self.i].word.to_string().parse().expect(
+                        &format!(
+                            "Failed to parse numeric value for `size` property at token:\"{:?}\"!",
+                            self.tokens[self.i]
+                        ),
+                    ));
                 }
                 "label" => {
                     self.i += 1;
