@@ -144,9 +144,16 @@ impl<'a> Parser<'a> {
                 "resizable" => w.props.resizable = Some(true),
                 "visible" => w.props.visible = Some(true),
                 "hotspot" => w.props.hotspot = Some(true),
+                "modal" => w.props.modal = Some(true),
+                "non_modal" => w.props.non_modal = Some(true),
+                "noborder" => w.props.noborder = Some(true),
                 "xywh" => {
                     self.i += 1;
                     w.props.xywh = self.consume_braced_string();
+                }
+                "size_range" => {
+                    self.i += 1;
+                    w.props.size_range = Some(self.consume_braced_string());
                 }
                 "color" => {
                     self.i += 1;
@@ -270,6 +277,14 @@ impl<'a> Parser<'a> {
                         w.props.label = Some(self.consume_braced_string());
                     } else {
                         w.props.label = Some(self.tokens[self.i].word.to_string());
+                    }
+                }
+                "xclass" => {
+                    self.i += 1;
+                    if self.tokens[self.i].typ == TokenType::OpenBrace {
+                        w.props.xclass = Some(self.consume_braced_string());
+                    } else {
+                        w.props.xclass = Some(self.tokens[self.i].word.to_string());
                     }
                 }
                 "class" => {
