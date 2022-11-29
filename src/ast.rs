@@ -106,6 +106,13 @@ pub struct Class {
 }
 
 #[derive(Debug, Default)]
+pub struct WidgetClass {
+    pub name: String,
+    pub props: WidgetProps,
+    pub widgets: Vec<Widget>,
+}
+
+#[derive(Debug, Default)]
 pub struct DeclProps {
     pub visibility: Visibility,
     pub global: Option<bool>,
@@ -130,10 +137,16 @@ pub struct Comment {
     pub props: CommentProps,
 }
 
+pub enum HasWidgetProps {
+    Widget(Widget),
+    WidgetClass(WidgetClass),
+}
+
 #[derive(Debug, Default)]
 pub struct Ast {
     pub i18n_type: Option<bool>,
     pub classes: Vec<Class>,
+    pub widget_classes: Vec<WidgetClass>,
     pub functions: Vec<Function>,
     pub comments: Vec<Comment>,
     pub decls: Vec<Decl>,
