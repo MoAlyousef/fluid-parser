@@ -14,7 +14,7 @@ Function {make_window1()} {open return_type Button
     }
   }
 }
-Function {make_window2()} {open return_type Button
+Function {make_window2(x: i32, y: i32)} {open return_type Button
 } {
   Fl_Window {} {open selected
     tooltip {this is a long text

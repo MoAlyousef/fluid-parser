@@ -64,9 +64,7 @@ impl<'a> Parser<'a> {
     fn consume_func(&mut self) -> Function {
         let mut f = Function::default();
         self.i += 1;
-        self.i += 1;
-        f.name = self.tokens[self.i].word.to_string();
-        self.i += 1; // closing parens of function name
+        f.name = self.consume_braced_string();
         self.i += 1; // opening parens of props
         while self.tokens[self.i].typ != TokenType::Eof {
             self.i += 1;
