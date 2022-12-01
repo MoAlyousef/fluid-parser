@@ -34,10 +34,8 @@ impl<'a> Parser<'a> {
                         self.i += 2;
                     }
                     "class" => {
-                        if self.tokens[self.i].word == "class" {
-                            let c = self.consume_class();
-                            a.classes.push(c);
-                        }
+                        let c = self.consume_class();
+                        a.classes.push(c);
                     }
                     "Function" => {
                         let f = self.consume_func();
@@ -118,7 +116,6 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        self.i += 1;
         f
     }
     fn consume_widget(&mut self) -> Widget {

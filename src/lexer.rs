@@ -22,6 +22,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Token<'a> {
         let mut t = Token::default();
         if self.cursor == self.size {
