@@ -46,6 +46,7 @@ pub struct WidgetProps {
     pub code3: Option<String>,
     pub extra_code: Option<String>,
     pub size_tuple: Option<String>,
+    pub margins: Option<String>,
     pub gap: Option<i32>,
     pub user_data: Option<String>,
     pub user_data_type: Option<String>,

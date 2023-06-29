@@ -330,6 +330,10 @@ impl<'a> Parser<'a> {
                     self.i += 1;
                     w.props.size_tuple = Some(self.consume_braced_string());
                 }
+                "margins" => {
+                    self.i += 1;
+                    w.props.margins = Some(self.consume_braced_string());
+                }
                 "fixed_size_tuples" => {
                     self.i += 1;
                     w.props.size_tuple = Some(self.consume_braced_string());
