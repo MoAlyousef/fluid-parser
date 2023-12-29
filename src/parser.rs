@@ -236,8 +236,11 @@ impl<'a> Parser<'a> {
                 }
                 "gap" => {
                     self.i += 1;
-                    w.props.gap = Some(self.tokens[self.i].word.to_string().parse().unwrap_or_else(|_| panic!("Failed to parse numeric value for `gap` property at token:\"{:?}\"!",
-                            self.tokens[self.i])));
+                    if self.tokens[self.i].typ == TokenType::OpenBrace {
+                        w.props.gap = Some(self.consume_braced_string());
+                    } else {
+                        w.props.gap = Some(self.tokens[self.i].word.to_string());
+                    }
                 }
                 "minimum" => {
                     self.i += 1;
@@ -334,6 +337,14 @@ impl<'a> Parser<'a> {
                     self.i += 1;
                     w.props.margins = Some(self.consume_braced_string());
                 }
+                "dimensions" => {
+                    self.i += 1;
+                    w.props.dimensions = Some(self.consume_braced_string());
+                }
+                "margin" => {
+                    self.i += 1;
+                    w.props.margin = Some(self.consume_braced_string());
+                }
                 "fixed_size_tuples" => {
                     self.i += 1;
                     w.props.size_tuple = Some(self.consume_braced_string());
@@ -388,6 +399,12 @@ impl<'a> Parser<'a> {
                         w.props.comment = Some(self.consume_braced_string());
                     } else {
                         w.props.comment = Some(self.tokens[self.i].word.to_string());
+                    }
+                }
+                "parent_properties" => {
+                    while self.tokens[self.i].typ != TokenType::CloseBrace {
+                        self.i += 1;
+                        w.props.parent_properties = Some(self.consume_parent_props());
                     }
                 }
                 _ => (),
@@ -519,5 +536,22 @@ impl<'a> Parser<'a> {
         }
         let end = self.tokens[self.i].end - 1;
         self.lexer.s[start..end].to_string()
+    }
+    fn consume_parent_props(&mut self) -> ParentProps {
+        let mut p = ParentProps::default();
+        while self.tokens[self.i].typ != TokenType::Eof {
+            self.i += 1;
+            if self.tokens[self.i].typ == TokenType::CloseBrace {
+                break;
+            }
+            match self.tokens[self.i].word {
+                "location" => {
+                    self.i += 1;
+                    p.location = Some(self.consume_braced_string());
+                },
+                _ => (),
+            }
+        }
+        p
     }
 }

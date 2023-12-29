@@ -1,4 +1,9 @@
 #[derive(Default, Debug)]
+pub struct ParentProps {
+    pub location: Option<String>,
+}
+
+#[derive(Default, Debug)]
 pub struct WidgetProps {
     pub open: Option<bool>,
     pub xywh: String,
@@ -47,11 +52,14 @@ pub struct WidgetProps {
     pub extra_code: Option<String>,
     pub size_tuple: Option<String>,
     pub margins: Option<String>,
-    pub gap: Option<i32>,
+    pub gap: Option<String>,
     pub user_data: Option<String>,
     pub user_data_type: Option<String>,
     pub callback: Option<String>,
     pub comment: Option<String>,
+    pub dimensions: Option<String>,
+    pub margin: Option<String>,
+    pub parent_properties: Option<ParentProps>,
 }
 
 #[derive(Debug, Default)]
